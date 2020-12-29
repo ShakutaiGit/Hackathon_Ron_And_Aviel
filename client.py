@@ -1,4 +1,5 @@
 from socket import *
+import struct
 
 client = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP) # UDP
 
@@ -12,8 +13,9 @@ client = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP) # UDP
 # Enable broadcasting mode
 client.setsockopt(SOL_SOCKET, SO_BROADCAST, 1)
 
-client.bind(("", 37020))
+client.bind(("", 13117))
 while True:
     # Thanks @seym45 for a fix
     data, addr = client.recvfrom(1024)
+    print(struct.unpack('QQQ',data))
     print("received message: %s"%data)
