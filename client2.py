@@ -30,7 +30,7 @@ while True:
     while connecting_to_tcp_server:
         with socket(AF_INET, SOCK_STREAM) as s:
             s.connect((ip, content[2]))
-            s.sendall('Team A'.encode())
+            s.sendall('Team B'.encode())
             data = s.recv(1024)
             print(data)
             connecting_to_tcp_server = False 
@@ -39,4 +39,3 @@ while True:
         print(s.recv(1024).decode())
 
          
-     
