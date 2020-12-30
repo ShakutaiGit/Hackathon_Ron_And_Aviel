@@ -15,7 +15,6 @@ server_tcp_port = 12000
 #initialize udp 
 server_udp = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)
 server_udp.setsockopt(SOL_SOCKET, SO_BROADCAST, 1)
-server_udp.setblocking(False)
 
 #initialize tcp
 multi_connections_tcp = socket();
@@ -95,12 +94,14 @@ def main():
                 waiting_for_clients = False
         #game_mode stage
         divide_teams_to_groups()
-        print("now starting game mode")
         send_message_to_all_clients()
         start_time=time.time()
+        i=0
         while time.time() - start_time < 10:
             if game_mode:
-                game_mode= False
+                tcp_connections[0][0].recv(1024)
+                i=i+1
+                print(i)
         print("game mode over  begin again ")
         reset_info()
 

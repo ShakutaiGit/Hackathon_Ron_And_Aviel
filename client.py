@@ -1,6 +1,7 @@
 from socket import *
 import struct
 import time 
+import msvcrt
 
 client_udp = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP) # UDP
 
@@ -31,14 +32,14 @@ while True:
     while connecting_to_tcp_server:
         with socket(AF_INET, SOCK_STREAM) as s:
             s.connect((ip, content[2]))
-            time.sleep(11)
             s.sendall('Team A'.encode())
             data = s.recv(1024)
             print(data)
-            connecting_to_tcp_server = False 
+            while True:
+                s.sendall(msvcrt.getch())
+                connecting_to_tcp_server = False 
     while game_mode:
-        print("game rules :")
-        print(s.recv(1024).decode())
+        x=0
 
          
      
