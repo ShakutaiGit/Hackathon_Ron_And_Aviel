@@ -34,10 +34,16 @@ def tcp_connection_reciver():
     while time.time()- start_time < 10:
         multi_connections_tcp.listen()
         client = multi_connections_tcp.accept()
-        tcp_connections.append(client)
+        thread1 = threading.Thread(target=accept_team_name,args=(client,start_time,))
+        thread1.start()
+
+
+def accept_team_name(client,t):
+    while time.time()- t < 10:
         conn, addr = client
         all_teams.append(conn.recv(1024).decode())
-        
+        tcp_connections.append(client)
+
 def send_message_to_all_clients():
     grp1=",".join(group_one)
     grp2=",".join(group_two)
@@ -87,20 +93,14 @@ def main():
                 thread2 = threading.Thread(target=tcp_connection_reciver,args=())
                 thread2.start()
                 waiting_for_clients = False
-            else:
-                waiting_for_clients = True
-                waiting_for_clients = False
         #game_mode stage
-        divide_teams_to_groups() 
+        divide_teams_to_groups()
+        print("now starting game mode")
+        send_message_to_all_clients()
         start_time=time.time()
         while time.time() - start_time < 10:
             if game_mode:
-                print("now starting game mode")
-                send_message_to_all_clients()
                 game_mode= False
-            else:
-                game_mode= True
-                game_mode= False 
         print("game mode over  begin again ")
         reset_info()
 
