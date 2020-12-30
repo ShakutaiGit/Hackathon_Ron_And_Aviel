@@ -15,7 +15,7 @@ group_one_counter = 0
 group_two_counter = 0 
 all_teams=[]
 ip_address = gethostbyname(gethostname())
-
+dicts_score_count = {}
 server_tcp_port = 12000
 #initialize udp 
 server_udp = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)
@@ -107,7 +107,7 @@ def main():
             divide_teams_to_groups()
             send_message_to_all_clients()
             start_time=time.time()
-            while time.time() - start_time < 10:
+            while time.time() - start_time < 20:
                 if game_mode:
                     game_mode= False
                     game_handler(start_time)
@@ -119,45 +119,30 @@ def main():
         print("game mode over  begin again ")
         reset_info()
 
+def creating_dict_counts():
+    global dicts_score_count
+    global all_teams
+    for team in all_teams:
+        dicts_score_count[team] = 0
+
+
 def game_handler(start_time):
     #for each player i have to put thread and make it thread safe
-    
-    x = threading.Thread(target=score_handler_group,args=(True,))
-    y = threading.Thread(target=score_handler_group,args=(False,))
-    x.start()
-    y.start()
-         
-         
-def score_handler_group(group_type):
-    threads = []
-    group=[]
-    global group_one
-    global group_two
-    if group_type:
-        group = group_one
-    else:
-        group = group_two
-    for index,team in enumerate(group,0):
-        threads[index] = threading.Thread(client_score,(team,index,group_type))
-        threads[index].start()
+    creating_dict_counts()
+    flag = True
+    global all_teams
+    while time.time() - start_time < 10:
+        if flag:
+            flag= False
+            for t in all_teams:
+                thread5=threading.Thread(target=client_score,args=(t,))
+                thread5.start()
 
-
-def client_score(team,index):
-    if group_type:
-        global group_one_score
-        group_one_score[index]=0
-    else:
-        global group_two_score
-        group_two_score[index]=0
+def client_score(team):
+    global dicts_score_count
     while True:
         team[1][0].recv(1024)
-        if group_type:
-            group_one_score[index]+=1
-        else:
-            group_two_score[index]+=1
-     
-
-        
+        dicts_score_count[team]+=1
 
 if __name__ == "__main__":
     main()
