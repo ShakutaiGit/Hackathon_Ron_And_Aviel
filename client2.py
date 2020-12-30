@@ -1,5 +1,7 @@
 from socket import *
 import struct
+import time 
+import msvcrt
 
 client_udp = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP) # UDP
 
@@ -11,8 +13,8 @@ client_udp = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP) # UDP
 # client_udp.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
 
 # Enable broadcasting mode
+client_udp.setsockopt(SOL_SOCKET,SO_REUSEADDR,1)
 client_udp.setsockopt(SOL_SOCKET, SO_BROADCAST, 1)
-#client_udp.setblocking(False)
 print("client started, listening for offer requests...")
 client_udp.bind(("", 13117))
 while True:
@@ -22,11 +24,11 @@ while True:
     while looking_server:
         # Thanks @seym45 for a fix
         data, addr = client_udp.recvfrom(1024)
+        client_udp.close()
         (ip, port) = addr
         content = struct.unpack('QQQ',data)
         print("Received offer from {} attempting to connect...".format(ip))# we have to check how we get the server ip 
         looking_server = False
-        client_udp.close()
     print("now  trying to connect the tcp server ")
     while connecting_to_tcp_server:
         with socket(AF_INET, SOCK_STREAM) as s:
@@ -34,9 +36,11 @@ while True:
             s.sendall('Team B'.encode())
             data = s.recv(1024)
             print(data)
-            connecting_to_tcp_server = False 
+            while True:
+                s.sendall(msvcrt.getch())
+                connecting_to_tcp_server = False 
     while game_mode:
-        print("game rules :")
-        print(s.recv(1024).decode())
+        x=0
 
          
+     
