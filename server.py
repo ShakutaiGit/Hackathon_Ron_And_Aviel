@@ -15,6 +15,7 @@ server_tcp_port = 12000
 #initialize udp 
 server_udp = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)
 server_udp.setsockopt(SOL_SOCKET, SO_BROADCAST, 1)
+server_udp.setblocking(False)
 
 #initialize tcp
 multi_connections_tcp = socket();
