@@ -8,11 +8,6 @@ import random
 
 group_one = []
 group_two = []
-group_one_score = []
-group_two_score = []
-scores = []
-group_one_counter = 0
-group_two_counter = 0 
 all_teams=[]
 ip_address = gethostbyname(gethostname())
 dicts_score_count = {}
@@ -111,13 +106,58 @@ def main():
                 if game_mode:
                     game_mode= False
                     game_handler(start_time)
-            msg="Game over!"
-            print(group_one_score)
-            # now score calculating 
-
-                
-        print("game mode over  begin again ")
+            msg= creating_end_game_msg()
+            print(msg)
+            for t in all_teams:
+                t[1][0].sendall(msg.encode())
+            # now score calculating   
         reset_info()
+
+def creating_end_game_msg():
+    global all_teams
+    global group_one
+    global group_two
+    score_group_one = calculating_group_one_score()
+    score_group_two = calculating_group_two_score()
+    msg="Game over!\n" +"Group 1 typed in "+score_group_one+" characters."+" Group 2 typed in "+score_group_two+" characters.\n"
+    if score_group_two > score_group_two:
+        msg+="Group 2 is wins!\n"
+        msg+=  "Congratulations to the winners:\n"+"==\n"
+        for t in group_two:
+            msg+= t[0]+"\n"
+    elif score_group_one > score_group_two:
+        msg+="Group 1 is wins!\n"
+        msg+=  "Congratulations to the winners:\n" +"==\n"
+        for t in group_one:
+            msg+= t[0]+"\n"
+    else:
+        msg+="its a Tie!\n"
+        msg+=  "Congratulations to the winners:\n"+"==\n"
+        for t in all_teams:
+            msg+= t[0]+"\n"
+    return msg
+   
+
+
+
+  
+
+def calculating_group_one_score():
+    res = 0 
+    global group_one
+    global dicts_score_count
+    for team in group_one:
+        res += dicts_score_count[team]
+    return res
+
+def calculating_group_two_score():
+    res = 0 
+    global group_two
+    global dicts_score_count
+    for team in group_two:
+        res += dicts_score_count[team]
+    return res
+
 
 def creating_dict_counts():
     global dicts_score_count
