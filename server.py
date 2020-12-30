@@ -5,35 +5,48 @@ import struct
 import threading
 import random
 
-
 group_one = []
 group_two = []
 all_teams=[]
 ip_address = gethostbyname(gethostname())
 dicts_score_count = {}
 server_tcp_port = 12000
-#initialize udp 
-server_udp = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)
-server_udp.setsockopt(SOL_SOCKET, SO_BROADCAST, 1)
 
 #initialize tcp
 multi_connections_tcp = socket();
 multi_connections_tcp.bind((ip_address, server_tcp_port))
 
 
-def UDP_Broadcast(start_time):    
+def initial_tcp():
+    global multi_connections_tcp
+    multi_connections_tcp = socket();
+    multi_connections_tcp.bind((ip_address, server_tcp_port))
+
+def UDP_Broadcast(start_time):
+    #initialize udp 
+    server_udp = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)
+    server_udp.setsockopt(SOL_SOCKET, SO_BROADCAST, 1)    
     while time.time()- start_time < 10:
         message = struct.pack('QQQ',0xfeedbeef ,0x2,server_tcp_port)
         server_udp.sendto(message, ('<broadcast>', 13117))
         time.sleep(1)
+    server_udp.close()
 
 def tcp_connection_reciver(start_time):
-    while time.time()- start_time < 10:
-        multi_connections_tcp.listen()
-        client = multi_connections_tcp.accept()
+    threads = []
+    while time.time() - start_time < 10:
+        try:
+            multi_connections_tcp.listen()
+            client = multi_connections_tcp.accept()
        # maybe insert accept to the thread , to accept simultionasly multiple connections.
-        thread1 = threading.Thread(target=accept_team_name,args=(client,start_time,))
-        thread1.start()
+            thread1 = threading.Thread(target=accept_team_name,args=(client,start_time,))
+            threads.append(thread1)
+            thread1.start()
+        except:
+            pass
+    # for t in threads:
+    #     if t.is_alive:
+    #         t.join()
 
 
 def accept_team_name(client,t):
@@ -77,10 +90,11 @@ def reset_info():
     group_one = []
     global group_two
     group_two = []
-    global group_one_counter 
-    group_one_counter = 0
-    global group_two_counter
-    group_two_counter = 0
+    global dicts_score_count
+    dicts_score_count.clear()
+    global multi_connections_tcp
+    multi_connections_tcp.close()
+    initial_tcp()
         
 def main():
     ip_address = gethostbyname(gethostname())
@@ -90,28 +104,43 @@ def main():
         waiting_for_clients = True
         game_mode = True
         #waiting for client stage
+        threads =[]
         while time.time()-start_time < 10:
             if waiting_for_clients:
-                thread1 = threading.Thread(target=UDP_Broadcast,args=(start_time,))
-                thread1.start()
-                thread2 = threading.Thread(target=tcp_connection_reciver,args=(start_time,))
-                thread2.start()
+                try:
+                    x= threading.Thread(target=UDP_Broadcast,args=(start_time,))
+                    y=threading.Thread(target=tcp_connection_reciver,args=(start_time,))
+                    x.start()
+                    y.start()
+                except:
+                    pass 
                 waiting_for_clients = False
         if len(all_teams) is not 0:
         #game_mode stage
+            #remmmeber to close the threads
             divide_teams_to_groups()
             send_message_to_all_clients()
             start_time=time.time()
-            while time.time() - start_time < 20:
+            while time.time() - start_time < 10:
                 if game_mode:
                     game_mode= False
-                    game_handler(start_time)
+                    try:
+                        game_handler(start_time)
+                    except:
+                        pass                        
+
             msg= creating_end_game_msg()
             print(msg)
             for t in all_teams:
                 t[1][0].sendall(msg.encode())
-            # now score calculating   
-        reset_info()
+            # now score calculating
+            print("Game over, sending out offer requests...")
+            # for t in threads:
+            #     if t.is_alive():
+            #         t.join()
+            reset_info()   
+        
+        
 
 def creating_end_game_msg():
     global all_teams
@@ -119,8 +148,8 @@ def creating_end_game_msg():
     global group_two
     score_group_one = calculating_group_one_score()
     score_group_two = calculating_group_two_score()
-    msg="Game over!\n" +"Group 1 typed in "+score_group_one+" characters."+" Group 2 typed in "+score_group_two+" characters.\n"
-    if score_group_two > score_group_two:
+    msg="Game over!\n" +"Group 1 typed in "+str(score_group_one)+" characters."+" Group 2 typed in "+str(score_group_two)+" characters.\n"
+    if score_group_two > score_group_one:
         msg+="Group 2 is wins!\n"
         msg+=  "Congratulations to the winners:\n"+"==\n"
         for t in group_two:
@@ -136,11 +165,7 @@ def creating_end_game_msg():
         for t in all_teams:
             msg+= t[0]+"\n"
     return msg
-   
 
-
-
-  
 
 def calculating_group_one_score():
     res = 0 
@@ -168,6 +193,7 @@ def creating_dict_counts():
 
 def game_handler(start_time):
     #for each player i have to put thread and make it thread safe
+    threads = []
     creating_dict_counts()
     flag = True
     global all_teams
@@ -175,14 +201,28 @@ def game_handler(start_time):
         if flag:
             flag= False
             for t in all_teams:
-                thread5=threading.Thread(target=client_score,args=(t,))
-                thread5.start()
+                try:
+                    thread5=threading.Thread(target=client_score,args=(t,))
+                    threads.append(thread5)
+                    thread5.start()
+                except:
+                    pass
+
+                
+                
+        # if t.is_alive:
+        #     print("hey there i am alive ")
+
 
 def client_score(team):
     global dicts_score_count
     while True:
-        team[1][0].recv(1024)
-        dicts_score_count[team]+=1
+        try:
+            team[1][0].recv(1024)
+        except:
+            pass
+        if team in dicts_score_count:
+            dicts_score_count[team]+=1
 
 if __name__ == "__main__":
     main()
