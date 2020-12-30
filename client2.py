@@ -12,6 +12,7 @@ client_udp = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP) # UDP
 
 # Enable broadcasting mode
 client_udp.setsockopt(SOL_SOCKET, SO_BROADCAST, 1)
+#client_udp.setblocking(False)
 print("client started, listening for offer requests...")
 client_udp.bind(("", 13117))
 while True:
