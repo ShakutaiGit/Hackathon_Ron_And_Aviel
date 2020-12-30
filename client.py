@@ -28,9 +28,12 @@ def TCP_Connection(content,ip):
             print(data)
             start_time = time.time()
             while time.time()-start_time < 10:
-                s.sendall(msvcrt.getch())
-            s.close()
+                if msvcrt.kbhit():
+                    s.sendall(msvcrt.getch())
             connecting_to_tcp_server=False
+            data = s.recv(1024).decode()
+            print(data)
+            s.close()
             print("Server disconnected, listening for offer requests...")
     
 def main():
