@@ -13,24 +13,32 @@ dicts_score_count = {}
 server_tcp_port = 12000
 
 #initialize tcp
-multi_connections_tcp = socket();
-multi_connections_tcp.bind((ip_address, server_tcp_port))
-
+try:
+    multi_connections_tcp = socket();
+    multi_connections_tcp.bind((ip_address, server_tcp_port))
+except:
+    pass
 
 def initial_tcp():
     global multi_connections_tcp
-    multi_connections_tcp = socket();
-    multi_connections_tcp.bind((ip_address, server_tcp_port))
+    try:
+        multi_connections_tcp = socket();
+        multi_connections_tcp.bind((ip_address, server_tcp_port))
+    except:
+        pass
 
 def UDP_Broadcast(start_time):
-    #initialize udp 
-    server_udp = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)
-    server_udp.setsockopt(SOL_SOCKET, SO_BROADCAST, 1)    
-    while time.time()- start_time < 10:
-        message = struct.pack('QQQ',0xfeedbeef ,0x2,server_tcp_port)
-        server_udp.sendto(message, ('<broadcast>', 13117))
-        time.sleep(1)
-    server_udp.close()
+    #initialize udp
+    try: 
+        server_udp = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)
+        server_udp.setsockopt(SOL_SOCKET, SO_BROADCAST, 1)    
+        while time.time()- start_time < 10:
+            message = struct.pack('QQQ',0xfeedbeef ,0x2,server_tcp_port)
+            server_udp.sendto(message, ('<broadcast>', 13117))
+            time.sleep(1)
+        server_udp.close()
+    except:
+        pass
 
 def tcp_connection_reciver(start_time):
     threads = []
@@ -50,9 +58,12 @@ def tcp_connection_reciver(start_time):
 
 
 def accept_team_name(client,t):
-    while time.time()- t < 10:
-        conn, addr = client
-        all_teams.append((conn.recv(1024).decode(),client))
+    try:
+        while time.time()- t < 10:
+            conn, addr = client
+            all_teams.append((conn.recv(1024).decode(),client))
+    except:
+        pass
 
 def send_message_to_all_clients():
     msg = "Welcome to Clash of fingers.\n"
@@ -65,7 +76,10 @@ def send_message_to_all_clients():
     msg+="\n"+"Start pressing keys on your keyboard as fast as you can!!"
     print(msg)
     for team in all_teams:
-        team[1][0].sendall(msg.encode())
+        try:
+            team[1][0].sendall(msg.encode())
+        except:
+            pass
 
 def convert_list_to_string(group):
     res = ""
@@ -93,8 +107,11 @@ def reset_info():
     global dicts_score_count
     dicts_score_count.clear()
     global multi_connections_tcp
-    multi_connections_tcp.close()
-    initial_tcp()
+    try:
+        multi_connections_tcp.close()
+        initial_tcp()
+    except:
+        pass
         
 def main():
     ip_address = gethostbyname(gethostname())
@@ -132,7 +149,10 @@ def main():
             msg= creating_end_game_msg()
             print(msg)
             for t in all_teams:
-                t[1][0].sendall(msg.encode())
+                try:
+                    t[1][0].sendall(msg.encode())
+                except:
+                    pass
             # now score calculating
             print("Game over, sending out offer requests...")
             # for t in threads:
