@@ -47,7 +47,7 @@ def TCP_Connection(tcp_port,ip):
                 time_limit=10
                 print(data)
                 start_time = time.time()
-                while time.time()-start_time < time_limit:
+                while time.time()-start_time < time_limit: # getting the keyboard clicks and sends this to the server
                     if msvcrt.kbhit():
                         s.sendall(msvcrt.getch())
                 connecting_to_tcp_server=False
